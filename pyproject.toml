@@ -1,0 +1,22 @@
+[project]
+name = "asr_eval"
+version = "0.1.0"
+description = "Code to do yearly evaluation of Norwegian speech recognition models"
+authors = [
+    {name = "Språkbanken", email = "sprakbanken@nb.no"},
+    {name = "Tita Enstad", email = "tita.enstad@nb.no"},
+    {name = "Marie Iversdatter Røsok", email = "marie.rosok@nb.no"},
+    {name = "Ingerid Løyning Dale", email = "ingerid.dale@nb.no"},
+]
+dependencies = []
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "CC-0"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
