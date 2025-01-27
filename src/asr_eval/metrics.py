@@ -22,8 +22,8 @@ def semdist(
 ) -> float:
     """Calculate semantic distance between reference and hypothesis"""
     return calculate_semdist(
-        reference_data=[reference],
-        predicted_data=[hypothesis],
+        reference,
+        hypothesis,
         model=model,
         tokenizer=tokenizer,
     )
@@ -33,7 +33,7 @@ def sbert_semdist(row):
     pass
 
 
-def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer):
+def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer) -> float:
     """Calculate semantic distance between reference and hypothesis using aligned semantic distance, 
     
     Implementation from the repo https://github.com/janinerugayan/aligned-semantic-distance.
@@ -50,4 +50,4 @@ def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tok
         hypothesis,
         model=model,
         tokenizer=tokenizer
-    )
+    ).score
