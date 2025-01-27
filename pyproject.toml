@@ -8,7 +8,7 @@ authors = [
     {name = "Marie Iversdatter Røsok", email = "marie.rosok@nb.no"},
     {name = "Ingerid Løyning Dale", email = "ingerid.dale@nb.no"},
 ]
-requires-python = ">=3.11"
+requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "CC-0"}
 dependencies = [
