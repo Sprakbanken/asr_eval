@@ -82,7 +82,7 @@ def main(datafile, modelname, gold_col, pred_col, outputfile):
     df["semdist"] = calculate_semdist(
         gold_texts, predicted_texts, bertmodel, berttokenizer
     )
-    
+
     df.to_csv(outputfile, index=False)
     print(f"Output written to {outputfile}")
 
@@ -132,4 +132,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.datafile, args.modelname, args.gold_col, args.pred_col, args.outputfile)
-#%%
+# %%
