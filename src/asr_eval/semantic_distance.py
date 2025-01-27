@@ -1,33 +1,7 @@
 # %%
 import pandas as pd
 import torch
-from transformers import AutoModelForMaskedLM, AutoTokenizer
-
-
-def make_sentence_embeddings(model_input, model_output) -> list:
-    """Calculate the mean of the token embeddings in each sentence,
-    and return the list of sentence embeddings for all sentences.
-
-    Args:
-        model_input: Tokenized text input to the language model
-        model_output: Token embeddings from the language model
-    """
-    embeddings = []
-    for token_embeddings, attention_mask in zip(
-        model_output.logits, model_input["attention_mask"]
-    ):
-        # Don't use padding when calculating averages of embeddings
-        if attention_mask[-1] == 1:
-            idx = len(token_embeddings) - 1
-            print("idx", idx)
-        else:
-            # If the attention mask is 0, the rest of the tokens are padding
-            idx = attention_mask.tolist().index(0)
-
-        sentence_embedding = token_embeddings[:idx].mean(axis=0)
-        print("sentence_embedding", sentence_embedding)
-        embeddings += [sentence_embedding]
-    return embeddings
+from transformers import AutoModelForMaskedLM, AutoTokenizer, BertModel, BertTokenizer
 
 
 def cosine_dist(sent1: torch.tensor, sent2: torch.tensor) -> float:
@@ -37,43 +11,28 @@ def cosine_dist(sent1: torch.tensor, sent2: torch.tensor) -> float:
 
 
 def calculate_semdist(
-    reference_data: list[str],
-    predicted_data: list[str],
-    model,
-    tokenizer,
-) -> pd.DataFrame:
-    """Calculate the semantic distance between the gold standard and the predicted text.
-
-    Args:
-        reference_data: List of reference texts
-        predicted_data: List of predicted texts
-        model: Pretrained BERT language model
-        tokenizer: Tokenizer for the BERT model
-    """
+    reference: str,
+    hypothesis: str,
+    model: BertModel,
+    tokenizer: BertTokenizer,
+) -> float:
+    """Calculate the semantic distance between the gold standard and the predicted text."""
     #  TODO: sjekk strenglikhet før vi kjører gjennom modellen
-    # TODO: se om ASD bruker noen triks vi også kan bruke
-    # https://github.com/janinerugayan/aligned-semantic-distance/blob/master/src/aligned_semantic_distance/asd_metric.py#L21
-    
     # 1. Tokeniser gullstandard og predikerte tekster
-    ref_tokens = tokenizer(reference_data, return_tensors="pt", padding=True)
-    hyp_tokens = tokenizer(predicted_data, return_tensors="pt", padding=True)
-    print("REF tokens: ", ref_tokens)
-    print("HYP tokens: ", hyp_tokens)
+    ref_tokens = tokenizer(reference, return_tensors="pt", padding=True)
+    hyp_tokens = tokenizer(hypothesis, return_tensors="pt", padding=True)
 
     # 2. Hent tokenembeddings fra språkmodellen
     with torch.no_grad():
-        references = model(**ref_tokens, output_hidden_states=True)
-        hypotheses = model(**hyp_tokens, output_hidden_states=True)
+        ref_model_output = model(**ref_tokens, output_hidden_states=True)
+        hyp_model_output = model(**hyp_tokens, output_hidden_states=True)
 
-    print("embeddings: ", references, hypotheses)
     # 3. Lag sentence embeddings ved å ta gjennomsnittet av token embeddings for hver setning
-    ref_sents = make_sentence_embeddings(model_input=ref_tokens, model_output=references)
-    hyp_sents = make_sentence_embeddings(model_input=hyp_tokens, model_output=hypotheses)
+    ref_sent = ref_model_output.hidden_states[0].squeeze().mean(0)
+    hyp_sent = hyp_model_output.hidden_states[0].squeeze().mean(0)
 
-    print("sent_embeds", ref_sents, hyp_sents)
     # 4. Regn ut cosinusdistansen mellom setningsembeddingene
-    semdist = [cosine_dist(ref, hyp) for ref, hyp in zip(ref_sents, hyp_sents)]
-    print("result", semdist)
+    semdist = cosine_dist(ref_sent, hyp_sent)
     return semdist
 
 
