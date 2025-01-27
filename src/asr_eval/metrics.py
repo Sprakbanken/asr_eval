@@ -16,7 +16,7 @@ def wer(reference: str, hypothesis: str) -> float:
 
 def semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer) -> float: 
     """Calculate semantic distance between reference and hypothesis"""
-    return calculate_semdist(reference=reference, hypothesis=hypothesis, model=model, tokenizer=tokenizer)
+    return calculate_semdist(reference_data=[reference], predicted_data=[hypothesis], model=model, tokenizer=tokenizer)
 
 
 def sbert_semdist(row):
