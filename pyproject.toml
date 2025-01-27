@@ -8,10 +8,23 @@ authors = [
     {name = "Marie Iversdatter Røsok", email = "marie.rosok@nb.no"},
     {name = "Ingerid Løyning Dale", email = "ingerid.dale@nb.no"},
 ]
-dependencies = ["pytest>=8.3.4", "ruff>=0.9.2", "jiwer>=3.0.5", "ipykernel>=6.29.5", "pandas>=2.2.3", "torch>=2.5.1", "transformers>=4.48.1", "scikit-learn>=1.6.1", "sentence-transformers>=3.4.0"]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "CC-0"}
+dependencies = [
+    "jiwer>=3.0.5",
+    "ipykernel>=6.29.5",
+    "pandas>=2.2.3",
+    "torch>=2.5.1",
+    "transformers>=4.48.1",
+    "scikit-learn>=1.6.1",
+    "sentence-transformers>=3.4.0",
+    "aligned-semantic-distance @ git+https://github.com/janinerugayan/aligned-semantic-distance.git",
+    "black>=24.10.0",
+    "pytest>=8.3.4",
+    "ruff>=0.9.2"
+]
+
 
 [build-system]
 requires = ["pdm-backend"]
