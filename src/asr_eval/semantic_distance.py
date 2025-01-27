@@ -32,8 +32,8 @@ def cosine_dist(sent1: torch.tensor, sent2: torch.tensor) -> float:
 
 
 def calculate_semdist(
-    reference_data: list,
-    predicted_data: list,
+    reference_data: list[str],
+    predicted_data: list[str],
     model,
     tokenizer,
 ) -> pd.DataFrame:
@@ -50,18 +50,22 @@ def calculate_semdist(
     # 1. Tokeniser gullstandard og predikerte tekster
     ref_tokens = tokenizer(reference_data, return_tensors="pt", padding=True)
     hyp_tokens = tokenizer(predicted_data, return_tensors="pt", padding=True)
-
+    print("REF tokens: ", ref_tokens)
+    print("HYP tokens: ", hyp_tokens)
     # 2. Hent tokenembeddings fra språkmodellen
     with torch.no_grad():
         references = model(**ref_tokens)
         hypotheses = model(**hyp_tokens)
 
+    print("embeddings: ", references, hypotheses)
     # 3. Lag sentence embeddings ved å ta gjennomsnittet av token embeddings for hver setning
     ref_sents = make_sentence_embeddings(references, ref_tokens)
     hyp_sents = make_sentence_embeddings(hypotheses, hyp_tokens)
 
+    print("sent_embeds", ref_sents, hyp_sents)
     # 4. Regn ut cosinusdistansen mellom setningsembeddingene
     semdist = [cosine_dist(ref, hyp) for ref, hyp in zip(ref_sents, hyp_sents)]
+    print("result", semdist)
     return semdist
 
 
@@ -69,14 +73,16 @@ def main(datafile, modelname, gold_col, pred_col, outputfile):
     """Load data from a csv file, calculate semantic distance and save to a new csv file"""
     df = pd.read_csv(datafile)
 
-    gold_texts = df[gold_col].tolist()
-    predicted_texts = df[pred_col].tolist()
+    gold_texts = df[gold_col].astype(str).tolist()
+    predicted_texts = df[pred_col].astype(str).tolist()
 
     berttokenizer = AutoTokenizer.from_pretrained(modelname)
     bertmodel = AutoModelForMaskedLM.from_pretrained(modelname, trust_remote_code=True)
+
     df["semdist"] = calculate_semdist(
         gold_texts, predicted_texts, bertmodel, berttokenizer
     )
+    
     df.to_csv(outputfile, index=False)
     print(f"Output written to {outputfile}")
 
