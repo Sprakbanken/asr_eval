@@ -54,9 +54,9 @@ def calculate_sbert_semdist(
     hypothesis: str,
     model: SentenceTransformer
 ) -> float:
-    """Calculate semdist for the reference and hypothesis text with sentencetransformer embeddings."""
-    ref_sent = model.encode(reference)
-    hyp_sent = model.encode(hypothesis)
+    """Calculate the semantic distance between the reference and hypothesis text with sentencetransformer embeddings."""
+    ref_sent = model.encode([reference])
+    hyp_sent = model.encode([hypothesis])
     semdist = cosine_dist(ref_sent, hyp_sent)
     return semdist
 
