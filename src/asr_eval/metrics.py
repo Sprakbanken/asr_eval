@@ -2,9 +2,10 @@
 
 import aligned_semantic_distance as asd
 import jiwer
+from sentence_transformers import SentenceTransformer
 from transformers import BertForMaskedLM, BertTokenizer
 
-from asr_eval.semantic_distance import calculate_semdist
+from asr_eval.semantic_distance import calculate_semdist, calculate_sbert_semdist
 
 
 def cer(reference: str, hypothesis: str) -> float:
@@ -20,7 +21,14 @@ def wer(reference: str, hypothesis: str) -> float:
 def semdist(
     reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer
 ) -> float:
-    """Calculate semantic distance between reference and hypothesis"""
+    """Calculate semantic distance between reference and hypothesis.
+        
+    The implementation follows the description in the paper
+        Kim, S., Arora, A., Le, D., Yeh, C., Fuegen, C., Kalinli, O., & Seltzer, M.L. (2021). 
+        Semantic Distance: A New Metric for ASR Performance Analysis Towards Spoken Language Understanding.
+        Interspeech.
+        URL: https://arxiv.org/abs/2104.02138
+    """
     return calculate_semdist(
         reference,
         hypothesis,
@@ -29,8 +37,15 @@ def semdist(
     )
 
 
-def sbert_semdist(row):
-    pass
+def sbert_semdist(
+    reference: str, hypothesis: str, model: SentenceTransformer,
+):
+    """Calculate semantic distance between reference and hypothesis using a SentenceTransformer model"""
+    return calculate_sbert_semdist(
+        reference,
+        hypothesis,
+        model=model
+    )
 
 
 def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer) -> float:
@@ -38,7 +53,7 @@ def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tok
     
     Implementation from the repo https://github.com/janinerugayan/aligned-semantic-distance.
 
-    Described in the paper:
+    Described in the paper
         Rugayan, J., Svendsen, T., Salvi, G. (2022)
         Semantically Meaningful Metrics for Norwegian ASR Systems.
         Proc. Interspeech 2022, 2283-2287,
