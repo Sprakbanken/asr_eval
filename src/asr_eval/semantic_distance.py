@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 import pandas as pd
 import torch
@@ -8,10 +7,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 
-def cosine_dist(sent1: torch.tensor | np.ndarray, sent2: torch.tensor | np.ndarray) -> float:
+def cosine_dist(sent1: torch.Tensor | np.ndarray, sent2: torch.Tensor | np.ndarray) -> float:
     """Calculate cosine distance between two sentence embeddings"""
     match type(sent1):
-        case torch.tensor:
+        case torch.Tensor:
             cossim = torch.nn.CosineSimilarity(dim=0)
             similarity_score  = cossim(sent1, sent2)
         case np.ndarray:
