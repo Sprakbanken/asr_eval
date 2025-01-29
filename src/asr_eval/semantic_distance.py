@@ -1,13 +1,22 @@
 # %%
+import numpy as np
 import pandas as pd
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer, BertModel, BertTokenizer
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
-def cosine_dist(sent1: torch.tensor, sent2: torch.tensor) -> float:
+
+def cosine_dist(sent1: torch.tensor | np.ndarray, sent2: torch.tensor | np.ndarray) -> float:
     """Calculate cosine distance between two sentence embeddings"""
-    cossim = torch.nn.CosineSimilarity(dim=0)
-    return float(1 - cossim(sent1, sent2))
+    match type(sent1):
+        case torch.tensor:
+            cossim = torch.nn.CosineSimilarity(dim=0)
+            similarity_score  = cossim(sent1, sent2)
+        case np.ndarray:
+            similarity_score = cosine_similarity(sent1, sent2)[0][0]
+    return float(1 - similarity_score)
 
 
 def calculate_semdist(
@@ -32,6 +41,18 @@ def calculate_semdist(
     hyp_sent = hyp_model_output.hidden_states[0].squeeze().mean(0)
 
     # 4. Regn ut cosinusdistansen mellom setningsembeddingene
+    semdist = cosine_dist(ref_sent, hyp_sent)
+    return semdist
+
+
+def calculate_sbert_semdist(
+    reference: str,
+    hypothesis: str,
+    model: SentenceTransformer
+) -> float:
+    """Calculate semdist for the reference and hypothesis text with sentencetransformer embeddings."""
+    ref_sent = model.encode(reference)
+    hyp_sent = model.encode(hypothesis)
     semdist = cosine_dist(ref_sent, hyp_sent)
     return semdist
 
