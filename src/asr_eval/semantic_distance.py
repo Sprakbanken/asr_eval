@@ -25,7 +25,12 @@ def calculate_semdist(
     model: BertModel,
     tokenizer: BertTokenizer,
 ) -> float:
-    """Calculate the semantic distance between the gold standard and the predicted text."""
+    """Calculate the semantic distance between the gold standard and the predicted text.
+    
+    The implementation follows the description in 
+    Kim et al. (2021) "Semantic Distance: A New Metric for ASR Performance Analysis Towards Spoken Language Understanding".
+    URL: https://arxiv.org/abs/2104.02138
+    """
     #  TODO: sjekk strenglikhet før vi kjører gjennom modellen
     # 1. Tokeniser gullstandard og predikerte tekster
     ref_tokens = tokenizer(reference, return_tensors="pt", padding=True)
