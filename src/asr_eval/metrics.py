@@ -4,17 +4,22 @@ import aligned_semantic_distance as asd
 import jiwer
 from sentence_transformers import SentenceTransformer
 from transformers import BertForMaskedLM, BertTokenizer
+import pandas as pd
 
 from asr_eval.semantic_distance import calculate_semdist, calculate_sbert_semdist
 
 
 def cer(reference: str, hypothesis: str) -> float:
     """Calculate Character Error Rate (CER) between reference and hypothesis"""
+    if reference == "":
+        return pd.NA
     return jiwer.cer(reference=reference, hypothesis=hypothesis)
 
 
 def wer(reference: str, hypothesis: str) -> float:
     """Calculate Word Error Rate (WER) between reference and hypothesis"""
+    if reference == "":
+        return pd.NA
     return jiwer.wer(reference=reference, hypothesis=hypothesis)
 
 
