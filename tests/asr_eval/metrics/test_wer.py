@@ -2,6 +2,7 @@ import pytest
 from asr_eval.metrics import wer
 import pandas as pd
 
+
 @pytest.mark.parametrize(
     "reference, hypothesis", [("foo", "foo"), ("bar baz", "bar baz"), ("1", "1")]
 )
@@ -35,6 +36,7 @@ def test_return_different_ratios_for_strings_of_different_length(
 ):
     result = wer(reference=reference, hypothesis=hypothesis)
     assert result == expected
+
 
 @pytest.mark.parametrize("hypothesis", ["foo", "bar baz", ""])
 def test_empty_reference_returns_nan(hypothesis):

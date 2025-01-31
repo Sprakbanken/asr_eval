@@ -25,6 +25,7 @@ def test_return_different_ratios_for_strings_of_different_length(
     result = cer(reference=reference, hypothesis=hypothesis)
     assert result == expected
 
+
 @pytest.mark.parametrize("hypothesis", ["foo", "barbar", ""])
 def test_empty_reference_returns_nan(hypothesis):
     result = cer(reference="", hypothesis=hypothesis)
