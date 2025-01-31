@@ -3,11 +3,9 @@ import pandas as pd
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer, BertModel, BertTokenizer
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 
 
-
- def cosine_distance(sent1: torch.Tensor, sent2: torch.Tensor) -> float:
+def cosine_distance(sent1: torch.Tensor, sent2: torch.Tensor) -> float:
     cossim = torch.nn.CosineSimilarity(dim=0)
     similarity_score  = cossim(sent1, sent2)
     return float(1 - similarity_score)
@@ -35,7 +33,7 @@ def calculate_semdist(
     hyp_sent = hyp_model_output.hidden_states[0].squeeze().mean(0)
 
     # 4. Regn ut cosinusdistansen mellom setningsembeddingene
-    semdist = cosine_dist(ref_sent, hyp_sent)
+    semdist = cosine_distance(ref_sent, hyp_sent)
     return semdist
 
 
