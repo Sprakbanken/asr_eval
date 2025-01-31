@@ -22,9 +22,9 @@ def semdist(
     reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer
 ) -> float:
     """Calculate semantic distance between reference and hypothesis.
-        
+
     The implementation follows the description in the paper
-        Kim, S., Arora, A., Le, D., Yeh, C., Fuegen, C., Kalinli, O., & Seltzer, M.L. (2021). 
+        Kim, S., Arora, A., Le, D., Yeh, C., Fuegen, C., Kalinli, O., & Seltzer, M.L. (2021).
         Semantic Distance: A New Metric for ASR Performance Analysis Towards Spoken Language Understanding.
         Interspeech.
         URL: https://arxiv.org/abs/2104.02138
@@ -38,19 +38,19 @@ def semdist(
 
 
 def sbert_semdist(
-    reference: str, hypothesis: str, model: SentenceTransformer,
+    reference: str,
+    hypothesis: str,
+    model: SentenceTransformer,
 ):
     """Calculate semantic distance between reference and hypothesis using a SentenceTransformer model"""
-    return calculate_sbert_semdist(
-        reference,
-        hypothesis,
-        model=model
-    )
+    return calculate_sbert_semdist(reference, hypothesis, model=model)
 
 
-def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer) -> float:
-    """Calculate semantic distance between reference and hypothesis using aligned semantic distance, 
-    
+def aligned_semdist(
+    reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer
+) -> float:
+    """Calculate semantic distance between reference and hypothesis using aligned semantic distance,
+
     Implementation from the repo https://github.com/janinerugayan/aligned-semantic-distance.
 
     Described in the paper
@@ -61,8 +61,5 @@ def aligned_semdist(reference: str, hypothesis: str, model: BertForMaskedLM, tok
         URL: https://www.isca-archive.org/interspeech_2022/rugayan22_interspeech.html#
     """
     return asd.get_asd_output(
-        reference,
-        hypothesis,
-        model=model,
-        tokenizer=tokenizer
+        reference, hypothesis, model=model, tokenizer=tokenizer
     ).score

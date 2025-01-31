@@ -3,8 +3,7 @@ from asr_eval.metrics import cer
 
 
 @pytest.mark.parametrize(
-    "reference, hypothesis", 
-    [("foo", "foo"), ("barbar", "barbar"), ("1", "1")]
+    "reference, hypothesis", [("foo", "foo"), ("barbar", "barbar"), ("1", "1")]
 )
 def test_returns_zero_for_equal_strings(reference, hypothesis):
     result = cer(reference=reference, hypothesis=hypothesis)
@@ -17,10 +16,10 @@ def test_returns_one_for_different_strings_of_equal_length():
 
 
 @pytest.mark.parametrize(
-    "reference, hypothesis, expected", 
-    [("foo", "foofoo", 1), ("foo", "barbar", 2)]
+    "reference, hypothesis, expected", [("foo", "foofoo", 1), ("foo", "barbar", 2)]
 )
-def test_return_different_ratios_for_strings_of_different_length(reference, hypothesis, expected):
+def test_return_different_ratios_for_strings_of_different_length(
+    reference, hypothesis, expected
+):
     result = cer(reference=reference, hypothesis=hypothesis)
     assert result == expected
-

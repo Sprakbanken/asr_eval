@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 @pytest.fixture(scope="session")
 def sbert_model():
-    model = SentenceTransformer("NbAiLab/nb-sbert-base") 
+    model = SentenceTransformer("NbAiLab/nb-sbert-base")
     return model
 
 

@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 
 def cosine_distance(sent1: torch.Tensor, sent2: torch.Tensor) -> float:
     cossim = torch.nn.CosineSimilarity(dim=0)
-    similarity_score  = cossim(sent1, sent2)
+    similarity_score = cossim(sent1, sent2)
     return float(1 - similarity_score)
 
 
@@ -38,9 +38,7 @@ def calculate_semdist(
 
 
 def calculate_sbert_semdist(
-    reference: str,
-    hypothesis: str,
-    model: SentenceTransformer
+    reference: str, hypothesis: str, model: SentenceTransformer
 ) -> float:
     """Calculate the semantic distance between the reference and hypothesis text with sentencetransformer embeddings."""
     ref_sent = model.encode(reference, convert_to_tensor=True)
