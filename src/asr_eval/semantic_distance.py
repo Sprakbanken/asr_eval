@@ -7,14 +7,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 
-def cosine_dist(sent1: torch.Tensor | np.ndarray, sent2: torch.Tensor | np.ndarray) -> float:
-    """Calculate cosine distance between two sentence embeddings"""
-    match type(sent1):
-        case torch.Tensor:
-            cossim = torch.nn.CosineSimilarity(dim=0)
-            similarity_score  = cossim(sent1, sent2)
-        case np.ndarray:
-            similarity_score = cosine_similarity(sent1, sent2)[0][0]
+ def cosine_distance(sent1: torch.Tensor, sent2: torch.Tensor) -> float:
+    cossim = torch.nn.CosineSimilarity(dim=0)
+    similarity_score  = cossim(sent1, sent2)
     return float(1 - similarity_score)
 
 
@@ -50,9 +45,9 @@ def calculate_sbert_semdist(
     model: SentenceTransformer
 ) -> float:
     """Calculate the semantic distance between the reference and hypothesis text with sentencetransformer embeddings."""
-    ref_sent = model.encode([reference])
-    hyp_sent = model.encode([hypothesis])
-    semdist = cosine_dist(ref_sent, hyp_sent)
+    ref_sent = model.encode(reference, convert_to_tensor=True)
+    hyp_sent = model.encode(hypothesis, convert_to_tensor=True)
+    semdist = cosine_distance(ref_sent, hyp_sent)
     return semdist
 
 
