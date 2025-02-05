@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import torch
+import logging 
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
@@ -27,14 +28,30 @@ def eval():
         help="Path to .csv file to save results. If not specified, will use same path as input file with _with_metrics appended",
         required=False,
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Save debug messages to the log file")
     args = parser.parse_args()
+
+    modelname = args.input_file.stem
+
+    if args.verbose:
+        modelname = args.input_file.stem
+        logging.basicConfig(filename=f"asr_eval_{modelname}.log", level=logging.DEBUG)
+    else: 
+        logging.basicConfig(filename=f"asr_eval_{modelname}.log", level=logging.INFO)
+
+    logging.info(f"Input file: {args.input_file}")
+    logging.info(f"Output file: {args.output_file}")
+    logging.debug(f"Reference column: {GOLD_COL}")
+    logging.debug(f"Prediction column: {PRED_COL}")
 
     df = pd.read_csv(args.input_file)
     df[PRED_COL] = df[PRED_COL].fillna("")
     df[GOLD_COL] = df[GOLD_COL].fillna("")
 
     df["standardized_prediction"] = df[PRED_COL].apply(standardize_text)
-    df = df[df["segment_id"] != EMPTY_SEGMENT_ID].reset_index(drop=True)
+    logging.debug("Done standardizing predictions.")
+    df = df[df["segment_id"] != EMPTY_SEGMENT_ID].reset_index(drop=True)  # Filter out empty segment
+    logging.debug(f"Filtered out empty segments: {EMPTY_SEGMENT_ID}")
 
     df["cer"] = df.apply(
         lambda row: cer(
@@ -42,12 +59,14 @@ def eval():
         ),
         axis=1,
     )
+    logging.info(f"CER: {df['cer'].mean()}")
     df["wer"] = df.apply(
         lambda row: wer(
             reference=row[GOLD_COL], hypothesis=row["standardized_prediction"]
         ),
         axis=1,
     )
+    logging.info(f"WER: {df['wer'].mean()}")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     sbert_model = SentenceTransformer("NbAiLab/nb-sbert-base", device=device)
@@ -59,6 +78,7 @@ def eval():
         ),
         axis=1,
     )
+    logging.info(f"SBERT SemDist: {df['sbert_semdist'].mean()}")
 
     model = AutoModelForMaskedLM.from_pretrained("NbAiLab/nb-bert-large")
     tokenizer = AutoTokenizer.from_pretrained("NbAiLab/nb-bert-large")
@@ -71,6 +91,7 @@ def eval():
         ),
         axis=1,
     )
+    logging.info(f"SemDist: {df['semdist'].mean()}")
 
     df["aligned_semdist"] = df.apply(
         lambda row: aligned_semdist(
@@ -81,6 +102,8 @@ def eval():
         ),
         axis=1,
     )
+    logging.info(f"Aligned SemDist: {df['aligned_semdist'].mean()}")
+    logging.info(f"Saving results to {args.output_file}")
 
     if args.output_file is None:
         args.output_file = args.input_file.parent / (
