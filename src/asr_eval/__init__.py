@@ -9,7 +9,12 @@ import logging
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
-GOLD_COL = "standardized_text"
+SEMANTIC_GOLD_BM_COL = "raw_text"
+SEMANTIC_GOLD_NN_COL = "raw_text_nn"
+
+VERBATIM_GOLD_BM_COL = "standardized_text"
+VERBATIM_GOLD_NN_COL = "standardized_text_nn"
+
 PRED_COL = "predictions"
 EMPTY_SEGMENT_ID = 4498  # one segment is empty/doesn't have any text
 
@@ -28,16 +33,26 @@ def eval():
         help="Path to .csv file to save results. If not specified, will use same path as input file with _with_metrics appended",
         required=False,
     )
+    parser.add_argument("-l", "--language-code", type=str, help="Language code for the predicted text ('nno' for nynorsk or 'nob' for bokmål)", required=True)
     parser.add_argument("-v", "--verbose", action="store_true", help="Save debug messages to the log file")
     args = parser.parse_args()
 
-    modelname = args.input_file.stem
+    filename = args.input_file.stem
+    logging.info(f"Starting evaluation for {filename}")
+
+    match args.language_code:
+        case "nno":
+            GOLD_COL = VERBATIM_GOLD_NN_COL
+        case "nob":
+            GOLD_COL = VERBATIM_GOLD_BM_COL
+        case _:
+            raise ValueError("Language code must be either 'nno' or 'nob'")
 
     if args.verbose:
         modelname = args.input_file.stem
-        logging.basicConfig(filename=f"asr_eval_{modelname}.log", level=logging.DEBUG)
+        logging.basicConfig(filename=f"asr_eval_{filename}.log", level=logging.DEBUG)
     else: 
-        logging.basicConfig(filename=f"asr_eval_{modelname}.log", level=logging.INFO)
+        logging.basicConfig(filename=f"asr_eval_{filename}.log", level=logging.INFO)
 
     logging.info(f"Input file: {args.input_file}")
     logging.info(f"Output file: {args.output_file}")
