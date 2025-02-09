@@ -5,7 +5,6 @@ from transformers import pipeline
 from asr_eval.predict.usm import SpeechInterface, SpeechParameters
 from asr_eval.predict.gcloud_speech import google_cloud_transcribe
 from asr_eval.predict.azure import azure_transcribe
-from asr_eval.predict.chirp import ChirpSpeechInterface, ChirpSpeechParameters
 from typing import TypedDict
 import torch
 from tqdm import tqdm
@@ -44,7 +43,7 @@ def azure_transcription_function(audiopaths: pd.Series) -> list[str]:
 
 
 def usm_transcription_function(audiopaths: pd.Series) -> list[str]:
-    interface = SpeechInterface(SpeechParameters())
+    interface = SpeechInterface(SpeechParameters("usm"))
     txts = []
     for x in tqdm(audiopaths, total=len(audiopaths)):
         try:
@@ -57,7 +56,7 @@ def usm_transcription_function(audiopaths: pd.Series) -> list[str]:
 
 
 def chirp_transcription_function(audiopaths: pd.Series) -> list[str]:
-    interface = ChirpSpeechInterface(ChirpSpeechParameters())
+    interface = SpeechInterface(SpeechParameters("chirp_2"))
     txts = []
     for x in tqdm(audiopaths, total=len(audiopaths)):
         try:

@@ -31,14 +31,14 @@ class SpeechParameters(object):
     https://cloud.google.com/speech-to-text/v2/docs/basics#recognizers
     """
 
-    def __init__(self):
+    def __init__(self, model: str):
         # Recognizer Id. This allowes you to name the Recognizer.
         # Must be unique by GCP project/location.
         self.recognizer_id = "usm-sprakbanken-no"  # @param
         # Language code to use with this recognizer.
         self.locale = "no-NO"  # @param
         # Use the USM model. Don't change if you want to actually use the USM model.
-        self.model = "usm"
+        self.model = model
         # GCP project to interact with Cloud Speech-to-Text API.
         self.gcp_project = os.environ.get("GCP_PROJECT_ID")  # @param
 
