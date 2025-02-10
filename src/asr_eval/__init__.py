@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import torch
-import logging 
+import logging
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
@@ -33,8 +33,19 @@ def eval():
         help="Path to .csv file to save results. If not specified, will use same path as input file with _with_metrics appended",
         required=False,
     )
-    parser.add_argument("-l", "--language-code", type=str, help="Language code for the predicted text ('nno' for nynorsk or 'nob' for bokmål)", required=True)
-    parser.add_argument("-v", "--verbose", action="store_true", help="Save debug messages to the log file")
+    parser.add_argument(
+        "-l",
+        "--language-code",
+        type=str,
+        help="Language code for the predicted text ('nno' for nynorsk or 'nob' for bokmål)",
+        required=True,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Save debug messages to the log file",
+    )
     args = parser.parse_args()
 
     filename = args.input_file.stem
@@ -42,9 +53,13 @@ def eval():
     if args.verbose:
         loglevel = logging.DEBUG
     else:
-        loglevel = logging.INFO 
+        loglevel = logging.INFO
 
-    logging.basicConfig(filename=f"asr_eval_{filename}.log", level=loglevel, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        filename=f"asr_eval_{filename}.log",
+        level=loglevel,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
     logging.info(f"Starting evaluation for {filename}")
 
     match args.language_code:
@@ -67,7 +82,9 @@ def eval():
 
     df["standardized_prediction"] = df[PRED_COL].apply(standardize_text)
     logging.debug("Done standardizing predictions.")
-    df = df[df["segment_id"] != EMPTY_SEGMENT_ID].reset_index(drop=True)  # Filter out empty segment
+    df = df[df["segment_id"] != EMPTY_SEGMENT_ID].reset_index(
+        drop=True
+    )  # Filter out empty segment
     logging.debug(f"Filtered out empty segments: {EMPTY_SEGMENT_ID}")
 
     df["cer"] = df.apply(
@@ -132,4 +149,3 @@ def eval():
         )
 
     df.to_csv(args.output_file, index=False)
-    # model.clear_cache()
