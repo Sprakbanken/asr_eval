@@ -141,11 +141,11 @@ def eval():
         axis=1,
     )
     logging.info(f"Aligned SemDist: {df['aligned_semdist'].mean()}")
-    logging.info(f"Saving results to {args.output_file}")
 
     if args.output_file is None:
         args.output_file = args.input_file.parent / (
             args.input_file.stem + "_with_metrics.csv"
         )
 
+    logging.info(f"Saving results to {args.output_file}")
     df.to_csv(args.output_file, index=False)
