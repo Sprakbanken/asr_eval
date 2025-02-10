@@ -17,5 +17,6 @@ def test_returns_0_for_equal_strings(reference, hypothesis, bert_tokenizer, bert
         hypothesis=hypothesis,
         model=bert_model,
         tokenizer=bert_tokenizer,
+        device="cpu",
     )
     assert result == pytest.approx(0.0, abs=1e-6)

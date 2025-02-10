@@ -38,6 +38,13 @@ def eval():
     args = parser.parse_args()
 
     filename = args.input_file.stem
+
+    if args.verbose:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO 
+
+    logging.basicConfig(filename=f"asr_eval_{filename}.log", level=loglevel, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info(f"Starting evaluation for {filename}")
 
     match args.language_code:
@@ -48,14 +55,9 @@ def eval():
         case _:
             raise ValueError("Language code must be either 'nno' or 'nob'")
 
-    if args.verbose:
-        modelname = args.input_file.stem
-        logging.basicConfig(filename=f"asr_eval_{filename}.log", level=logging.DEBUG)
-    else: 
-        logging.basicConfig(filename=f"asr_eval_{filename}.log", level=logging.INFO)
-
     logging.info(f"Input file: {args.input_file}")
     logging.info(f"Output file: {args.output_file}")
+    logging.info(f"Language code: {args.language_code}")
     logging.debug(f"Reference column: {GOLD_COL}")
     logging.debug(f"Prediction column: {PRED_COL}")
 
@@ -84,18 +86,19 @@ def eval():
     logging.info(f"WER: {df['wer'].mean()}")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    sbert_model = SentenceTransformer("NbAiLab/nb-sbert-base", device=device)
+    model = SentenceTransformer("NbAiLab/nb-sbert-base", device=device)
     df["sbert_semdist"] = df.apply(
         lambda row: sbert_semdist(
             reference=row[GOLD_COL],
             hypothesis=row["standardized_prediction"],
-            model=sbert_model,
+            model=model,
         ),
         axis=1,
     )
     logging.info(f"SBERT SemDist: {df['sbert_semdist'].mean()}")
 
     model = AutoModelForMaskedLM.from_pretrained("NbAiLab/nb-bert-large")
+    model.to(device)
     tokenizer = AutoTokenizer.from_pretrained("NbAiLab/nb-bert-large")
     df["semdist"] = df.apply(
         lambda row: semdist(
@@ -103,9 +106,11 @@ def eval():
             hypothesis=row["standardized_prediction"],
             model=model,
             tokenizer=tokenizer,
+            device=device,
         ),
         axis=1,
     )
+
     logging.info(f"SemDist: {df['semdist'].mean()}")
 
     df["aligned_semdist"] = df.apply(
@@ -114,6 +119,7 @@ def eval():
             hypothesis=row["standardized_prediction"],
             model=model,
             tokenizer=tokenizer,
+            device=device,
         ),
         axis=1,
     )
@@ -126,3 +132,4 @@ def eval():
         )
 
     df.to_csv(args.output_file, index=False)
+    # model.clear_cache()

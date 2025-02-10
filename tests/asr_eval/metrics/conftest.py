@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 @pytest.fixture(scope="session")
 def sbert_model():
-    model = SentenceTransformer("NbAiLab/nb-sbert-base")
+    model = SentenceTransformer("NbAiLab/nb-sbert-base", device="cpu")
     return model
 
 
@@ -15,6 +15,7 @@ def bert_model():
     """Load a "small" Norwegian BERT model to run with the tests, which can also be run on CPU"""
     bertmodelname = "NbAiLab/nb-bert-base"
     model = AutoModelForMaskedLM.from_pretrained(bertmodelname, trust_remote_code=True)
+    model.to("cpu")
     return model
 
 
