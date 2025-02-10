@@ -46,6 +46,11 @@ def eval():
         action="store_true",
         help="Save debug messages to the log file",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing outputfile if it exists (will skip if not set)",
+    )
     args = parser.parse_args()
 
     filename = args.input_file.stem
@@ -70,11 +75,20 @@ def eval():
         case _:
             raise ValueError("Language code must be either 'nno' or 'nob'")
 
+    if args.output_file is None:
+        args.output_file = args.input_file.parent / (
+            args.input_file.stem + "_with_metrics.csv"
+        )
+
     logging.info(f"Input file: {args.input_file}")
     logging.info(f"Output file: {args.output_file}")
     logging.info(f"Language code: {args.language_code}")
     logging.debug(f"Reference column: {GOLD_COL}")
     logging.debug(f"Prediction column: {PRED_COL}")
+
+    if args.output_file.exists() and not args.overwrite:
+        logging.info(f"Output file {args.output_file} already exists. Skipping.")
+        exit(0)
 
     df = pd.read_csv(args.input_file)
     df[PRED_COL] = df[PRED_COL].fillna("")
@@ -141,11 +155,6 @@ def eval():
         axis=1,
     )
     logging.info(f"Aligned SemDist: {df['aligned_semdist'].mean()}")
-
-    if args.output_file is None:
-        args.output_file = args.input_file.parent / (
-            args.input_file.stem + "_with_metrics.csv"
-        )
 
     logging.info(f"Saving results to {args.output_file}")
     df.to_csv(args.output_file, index=False)
