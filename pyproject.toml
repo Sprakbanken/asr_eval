@@ -12,7 +12,7 @@ requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "CC-0"}
 dependencies = [
-    "aligned-semantic-distance @ git+https://github.com/janinerugayan/aligned-semantic-distance.git",
+    "aligned-semantic-distance @ git+https://github.com/Sprakbanken/aligned-semantic-distance.git",
     "ipykernel>=6.29.5",
     "jiwer>=3.0.5",
     "pandas>=2.2.3",

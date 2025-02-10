@@ -15,12 +15,15 @@ def calculate_semdist(
     hypothesis: str,
     model: BertModel,
     tokenizer: BertTokenizer,
+    device: str,
 ) -> float:
     """Calculate the semantic distance between the gold standard and the predicted text."""
     #  TODO: sjekk strenglikhet før vi kjører gjennom modellen
     # 1. Tokeniser gullstandard og predikerte tekster
     ref_tokens = tokenizer(reference, return_tensors="pt", padding=True)
+    ref_tokens.to(device)
     hyp_tokens = tokenizer(hypothesis, return_tensors="pt", padding=True)
+    hyp_tokens.to(device)
 
     # 2. Hent tokenembeddings fra språkmodellen
     with torch.no_grad():
