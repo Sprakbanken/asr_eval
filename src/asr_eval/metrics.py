@@ -24,7 +24,11 @@ def wer(reference: str, hypothesis: str) -> float:
 
 
 def semdist(
-    reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer, device: str
+    reference: str,
+    hypothesis: str,
+    model: BertForMaskedLM,
+    tokenizer: BertTokenizer,
+    device: str,
 ) -> float:
     """Calculate semantic distance between reference and hypothesis.
 
@@ -53,7 +57,11 @@ def sbert_semdist(
 
 
 def aligned_semdist(
-    reference: str, hypothesis: str, model: BertForMaskedLM, tokenizer: BertTokenizer, device: str,
+    reference: str,
+    hypothesis: str,
+    model: BertForMaskedLM,
+    tokenizer: BertTokenizer,
+    device: str,
 ) -> float:
     """Calculate semantic distance between reference and hypothesis using aligned semantic distance,
 
@@ -67,5 +75,9 @@ def aligned_semdist(
         URL: https://www.isca-archive.org/interspeech_2022/rugayan22_interspeech.html#
     """
     return asd.get_asd_output(
-        reference, hypothesis, model=model, tokenizer=tokenizer, device=device,
+        reference,
+        hypothesis,
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
     ).score
