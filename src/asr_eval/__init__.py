@@ -53,19 +53,16 @@ def eval():
     )
     args = parser.parse_args()
 
-    filename = args.input_file.stem
-
     if args.verbose:
         loglevel = logging.DEBUG
     else:
         loglevel = logging.INFO
 
     logging.basicConfig(
-        filename=f"logs/asr_eval_{filename}.log",
+        filename=f"logs/asr_eval_{args.input_file.stem}.log",
         level=loglevel,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
-    logging.info(f"Starting evaluation for {filename}")
 
     match args.language_code:
         case "nno":
@@ -77,7 +74,7 @@ def eval():
 
     if args.output_file is None:
         args.output_file = args.input_file.parent / (
-            args.input_file.stem + f"_{args.language_code}_with_metrics.csv"
+            args.input_file.stem + f"_with_metrics_{args.language_code}.csv"
         )
 
     logging.info(f"Input file: {args.input_file}")
