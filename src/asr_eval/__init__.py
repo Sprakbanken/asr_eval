@@ -61,7 +61,7 @@ def eval():
         loglevel = logging.INFO
 
     logging.basicConfig(
-        filename=f"asr_eval_{filename}.log",
+        filename=f"logs/asr_eval_{filename}.log",
         level=loglevel,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
