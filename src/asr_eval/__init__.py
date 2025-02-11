@@ -69,21 +69,21 @@ def eval():
 
     match args.language_code:
         case "nno":
-            GOLD_COL = VERBATIM_GOLD_NN_COL
+            gold_column = VERBATIM_GOLD_NN_COL
         case "nob":
-            GOLD_COL = VERBATIM_GOLD_BM_COL
+            gold_column = VERBATIM_GOLD_BM_COL
         case _:
             raise ValueError("Language code must be either 'nno' or 'nob'")
 
     if args.output_file is None:
         args.output_file = args.input_file.parent / (
-            args.input_file.stem + "_with_metrics.csv"
+            args.input_file.stem + f"_{args.language_code}_with_metrics.csv"
         )
 
     logging.info(f"Input file: {args.input_file}")
     logging.info(f"Output file: {args.output_file}")
     logging.info(f"Language code: {args.language_code}")
-    logging.debug(f"Reference column: {GOLD_COL}")
+    logging.debug(f"Reference column: {gold_column}")
     logging.debug(f"Prediction column: {PRED_COL}")
 
     if args.output_file.exists() and not args.overwrite:
@@ -92,7 +92,7 @@ def eval():
 
     df = pd.read_csv(args.input_file)
     df[PRED_COL] = df[PRED_COL].fillna("")
-    df[GOLD_COL] = df[GOLD_COL].fillna("")
+    df[gold_column] = df[gold_column].fillna("")
 
     df["standardized_prediction"] = df[PRED_COL].apply(standardize_text)
     logging.debug("Done standardizing predictions.")
@@ -103,14 +103,14 @@ def eval():
 
     df["cer"] = df.apply(
         lambda row: cer(
-            reference=row[GOLD_COL], hypothesis=row["standardized_prediction"]
+            reference=row[gold_column], hypothesis=row["standardized_prediction"]
         ),
         axis=1,
     )
     logging.info(f"CER: {df['cer'].mean()}")
     df["wer"] = df.apply(
         lambda row: wer(
-            reference=row[GOLD_COL], hypothesis=row["standardized_prediction"]
+            reference=row[gold_column], hypothesis=row["standardized_prediction"]
         ),
         axis=1,
     )
@@ -120,7 +120,7 @@ def eval():
     model = SentenceTransformer("NbAiLab/nb-sbert-base", device=device)
     df["sbert_semdist"] = df.apply(
         lambda row: sbert_semdist(
-            reference=row[GOLD_COL],
+            reference=row[gold_column],
             hypothesis=row["standardized_prediction"],
             model=model,
         ),
@@ -133,7 +133,7 @@ def eval():
     tokenizer = AutoTokenizer.from_pretrained("NbAiLab/nb-bert-large")
     df["semdist"] = df.apply(
         lambda row: semdist(
-            reference=row[GOLD_COL],
+            reference=row[gold_column],
             hypothesis=row["standardized_prediction"],
             model=model,
             tokenizer=tokenizer,
@@ -146,7 +146,7 @@ def eval():
 
     df["aligned_semdist"] = df.apply(
         lambda row: aligned_semdist(
-            reference=row[GOLD_COL],
+            reference=row[gold_column],
             hypothesis=row["standardized_prediction"],
             model=model,
             tokenizer=tokenizer,
