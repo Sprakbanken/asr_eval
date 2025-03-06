@@ -60,7 +60,7 @@ def load_files_to_df(
             continue
         df = pd.read_csv(file)
         date, model_name, language_code, pred_lang = filestem_to_data(file.stem)
-        df["year"] = year
+        df["year"] = year + 1 if filter_for_report else year
         df["date"] = pd.to_datetime(date, format="%Y-%m-%d")
         df["prediction_langcode"] = pred_lang
         df["model_name"] = model_name
