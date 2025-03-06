@@ -22,13 +22,12 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
         or model_name.endswith("_nob")
     ):
         prediction_langcode = "nob"
-        model_name = model_name.replace("-bokmaal-v2", "")
+        # model_name = model_name.replace("-bokmaal-v2", "")
         model_name = model_name.replace("_nob", "")
         model_name = model_name.replace("_no", "")
         model_name = model_name.replace("-no", "")
         if "voxrex" in model_name:
             model_name = "nb-wav2vec2-1b"
-
     if (
         "nynorsk" in model_name
         or model_name.endswith("_nn")
@@ -36,7 +35,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
         or model_name.endswith("_nno")
     ):
         prediction_langcode = "nno"
-        model_name = model_name.replace("-nynorsk", "")
+        # model_name = model_name.replace("-nynorsk", "")
         model_name = model_name.replace("_nno", "")
         model_name = model_name.replace("_nn", "")
         model_name = model_name.replace("-nn", "")
@@ -48,10 +47,16 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     return date, model_name, language_code, prediction_langcode
 
 
-def load_files_to_df(filelist: list[Path], year: int) -> pd.DataFrame:
+def load_files_to_df(
+    filelist: list[Path], year: int, filter_for_report: bool = False
+) -> pd.DataFrame:
     dfs = []
     for file in filelist:
         if year >= 2024 and "bokmaal" in file.stem and "-v2" not in file.stem:
+            continue
+        if filter_for_report and (
+            "usm" in file.stem or "nb-whisper-large-distil-turbo-beta" in file.stem
+        ):
             continue
         df = pd.read_csv(file)
         date, model_name, language_code, pred_lang = filestem_to_data(file.stem)
