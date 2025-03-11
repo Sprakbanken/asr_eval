@@ -15,6 +15,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     ):
         prediction_langcode = "nob"
         model_name = model_name.replace("chirp", "chirp_2")
+        model_name = model_name.replace("usm", "chirp")
     if (
         "bokmaal" in model_name
         or model_name.endswith("_no")
@@ -22,7 +23,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
         or model_name.endswith("_nob")
     ):
         prediction_langcode = "nob"
-        # model_name = model_name.replace("-bokmaal-v2", "")
+        model_name = model_name.replace("-bokmaal-v2", "")
         model_name = model_name.replace("_nob", "")
         model_name = model_name.replace("_no", "")
         model_name = model_name.replace("-no", "")
@@ -35,7 +36,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
         or model_name.endswith("_nno")
     ):
         prediction_langcode = "nno"
-        # model_name = model_name.replace("-nynorsk", "")
+        model_name = model_name.replace("-nynorsk", "")
         model_name = model_name.replace("_nno", "")
         model_name = model_name.replace("_nn", "")
         model_name = model_name.replace("-nn", "")
@@ -43,6 +44,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     model_name = model_name.replace("-long", "")
     model_name = model_name.replace("NbAiLab_", "")
     model_name = model_name.replace("openai_", "openai-")
+    model_name = model_name.replace("-v3", "")
 
     return date, model_name, language_code, prediction_langcode
 
@@ -68,4 +70,27 @@ def load_files_to_df(
 
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
+    return df
+
+
+def rename_model_names(df, filter_out_models: bool = False):
+    if filter_out_models:
+        df = df[~df["model_name"].isin(["nb-whisper-large-distil-turbo-beta", "usm"])]
+
+    df.loc[
+        (df["language_code"] == "nno")
+        & (df["model_name"].str.contains("nb-wav2vec2-1b")),
+        "model_name",
+    ] = "nb-wav2vec2-1b-nynorsk"
+    df.loc[
+        (df["language_code"] == "nob")
+        & (df["model_name"].str.contains("nb-wav2vec2-1b")),
+        "model_name",
+    ] = "nb-wav2vec2-1b-bokmaal-v2"
+    model_name_map = {
+        "chirp": "chirp_2",  # google.cloud.speech_v2
+        "openai-whisper-large": "openai-whisper-large-v3",
+    }
+
+    df = df.replace({"model_name": model_name_map})
     return df
