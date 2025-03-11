@@ -46,11 +46,12 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     return date, model_name, language_code, prediction_langcode
 
 
-def load_files_to_df(filelist: list[Path], year: int) -> pd.DataFrame:
+def load_files_to_df(filedir: Path) -> pd.DataFrame:
     dfs = []
-    for file in filelist:
+    year = int(filedir.stem) + 1
+    for file in filedir.glob("*_with_metrics*.csv"):
         if (
-            (year >= 2024)
+            (year > 2024)
             and (("bokmaal" in file.stem) and ("-v2" not in file.stem))
             or ("nb-whisper-large-distil-turbo-beta" in file.stem)
         ):
@@ -59,7 +60,7 @@ def load_files_to_df(filelist: list[Path], year: int) -> pd.DataFrame:
         if pred_lang == "":
             continue
         df = pd.read_csv(file)
-        df["year"] = year + 1
+        df["year"] = year
         df["date"] = pd.to_datetime(date, format="%Y-%m-%d")
         df["prediction_langcode"] = pred_lang
         df["model_name"] = model_name
