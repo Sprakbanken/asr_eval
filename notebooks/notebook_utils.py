@@ -46,9 +46,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     return date, model_name, language_code, prediction_langcode
 
 
-def load_files_to_df(
-    filelist: list[Path], year: int, filter_for_report: bool = False
-) -> pd.DataFrame:
+def load_files_to_df(filelist: list[Path], year: int) -> pd.DataFrame:
     dfs = []
     for file in filelist:
         if (
@@ -57,9 +55,11 @@ def load_files_to_df(
             or ("nb-whisper-large-distil-turbo-beta" in file.stem)
         ):
             continue
-        df = pd.read_csv(file)
         date, model_name, language_code, pred_lang = filestem_to_data(file.stem)
-        df["year"] = year + 1 if filter_for_report else year
+        if pred_lang == "":
+            continue
+        df = pd.read_csv(file)
+        df["year"] = year + 1
         df["date"] = pd.to_datetime(date, format="%Y-%m-%d")
         df["prediction_langcode"] = pred_lang
         df["model_name"] = model_name
