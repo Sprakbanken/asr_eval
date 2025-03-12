@@ -1,4 +1,5 @@
 import re
+import pandas as pd
 
 
 def remove_punctuation(text: str) -> str:
@@ -38,3 +39,34 @@ def standardize_text(text: str) -> str:
     text = remove_punctuation(text)
     text = remove_multiple_spaces(text)
     return text
+
+
+def count_words(string):
+    if isinstance(string, str):
+        return len(string.split(" "))
+    else:
+        return 1
+
+
+def count_chars(string):
+    if isinstance(string, str):
+        return len(string)
+    else:
+        return 1
+
+
+def add_error_count(
+    df: pd.DataFrame, text_col: str, condition: pd.Series | None = None
+) -> pd.DataFrame:
+    """Count words and characters and errors to calculate mean scores that are not affected by segment length"""
+    if condition is None:
+        condition = df.index
+    df.loc[condition, "word_count"] = df.loc[condition, text_col].apply(count_words)
+    df.loc[condition, "char_count"] = df.loc[condition, text_col].apply(count_chars)
+    df.loc[condition, "word_errors"] = (
+        df.loc[condition, "wer"] * df.loc[condition, "word_count"]
+    )
+    df.loc[condition, "char_errors"] = (
+        df.loc[condition, "cer"] * df.loc[condition, "char_count"]
+    )
+    return df
