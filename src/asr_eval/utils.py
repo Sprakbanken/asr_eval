@@ -80,3 +80,39 @@ def calculate_mean_error_rate(
         df[stat_col].sum() / df[count_col].sum() * 100,
         2,
     )
+
+
+def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
+    """Calculate mean scores for each model and language, and group by a chosen feature_col"""
+    data_dict = {
+        "modell": [],
+        "språk": [],
+        "CER": [],
+        "WER": [],
+        "aligned semantic distance": [],
+        "semantic distance": [],
+        "semantic distance (sBERT)": [],
+        feature_col: [],
+    }
+
+    for (model, lang, pred_lang, feature), df_ in df.groupby(
+        ["model_name", "language_code", "prediction_langcode", feature_col]
+    ):
+        if pred_lang == "":
+            continue
+        data_dict["modell"].append(model)
+        data_dict["språk"].append(lang)
+        data_dict["CER"].append(
+            calculate_mean_error_rate(df_, "char_errors", "char_count")
+        )
+        data_dict["WER"].append(
+            calculate_mean_error_rate(df_, "word_errors", "word_count")
+        )
+        data_dict["aligned semantic distance"].append(df_.aligned_semdist.mean())
+        data_dict["semantic distance"].append(df_.semdist.mean())
+        data_dict["semantic distance (sBERT)"].append(df_.sbert_semdist.mean())
+        data_dict[feature_col].append(feature)
+
+    mean_score_df = pd.DataFrame(data_dict).drop_duplicates()
+    mean_score_df[feature_col] = mean_score_df[feature_col].astype("str")
+    return mean_score_df
