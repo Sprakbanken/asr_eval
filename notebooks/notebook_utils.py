@@ -69,3 +69,23 @@ def load_files_to_df(filedir: Path) -> pd.DataFrame:
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
     return df
+
+
+def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
+    """Expand abbreviations for values in the dialect and gender columns"""
+
+    dialect_areas = {
+        "w": "vest",
+        "n": "nord",
+        "t": "trøndersk",
+        "sw": "sørvest",
+        "e": "øst",
+    }
+    gender_replace = {
+        "m": "mann",
+        "f": "kvinne",
+    }
+
+    df["dialect"] = df["dialect"].replace(dialect_areas)
+    df["gender"] = df["gender"].replace(gender_replace)
+    return df
