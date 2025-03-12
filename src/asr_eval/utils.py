@@ -70,3 +70,13 @@ def add_error_count(
         df.loc[condition, "cer"] * df.loc[condition, "char_count"]
     )
     return df
+
+
+def calculate_mean_error_rate(
+    df: pd.DataFrame, stat_col: str, count_col: str
+) -> pd.DataFrame:
+    """Calculate total error rate for a dataframe given a stat_col with segmentwise number of errors"""
+    return round(
+        df[stat_col].sum() / df[count_col].sum() * 100,
+        2,
+    )
