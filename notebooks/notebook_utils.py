@@ -1,5 +1,20 @@
 import pandas as pd
 from pathlib import Path
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# Rename various labels for the visualisation
+VISUALIZE_LABEL_MAP = {
+    "cer": "CER",
+    "wer": "WER",
+    "sbert_semdist": "Semantic Distance (sBERT)",
+    "semdist": "Semantic Distance",
+    "aligned_semdist": "Aligned Semantic Distance",
+    "dialect": "Dialekt",
+    "year": "Årstall",
+    "gender": "Kjønn",
+}
 
 
 def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
@@ -89,3 +104,43 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
     df["dialect"] = df["dialect"].replace(dialect_areas)
     df["gender"] = df["gender"].replace(gender_replace)
     return df
+
+
+def get_score_by_column(
+    df: pd.DataFrame, gb_col: str, stat_col: str, count_col: str
+) -> pd.DataFrame:
+    """group by gb_col in ds and calculate wer given a stat_col with segmentwise number of errors"""
+    return round(
+        df.groupby(gb_col)[stat_col].sum() / df.groupby(gb_col)[count_col].sum() * 100,
+        2,
+    )
+
+
+def make_heatmap(
+    df: pd.DataFrame,
+    grouping: str,
+    metric: str,
+    cmap="Blues",
+    figsize=(8, 4),
+    annot=True,
+    fmt=".2f",
+):
+    if metric == "wer":
+        grouped_df = get_score_by_column(
+            df, [grouping, "model_name"], "word_errors", "word_count"
+        ).reset_index()
+    elif metric == "cer":
+        grouped_df = get_score_by_column(
+            df, [grouping, "model_name"], "char_errors", "char_count"
+        ).reset_index()
+    elif "semdist" in metric:
+        grouped_df = df.groupby([grouping, "model_name"])[metric].mean().reset_index()
+    else:
+        raise ValueError("Invalid metric")
+
+    feature_col = VISUALIZE_LABEL_MAP[grouping]
+    metric_col = VISUALIZE_LABEL_MAP[metric]
+    grouped_df.columns = [feature_col, "Modell", metric_col]
+    pivot = grouped_df.pivot(index=feature_col, columns="Modell", values=metric_col)
+    plt.figure(figsize=figsize)
+    sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
