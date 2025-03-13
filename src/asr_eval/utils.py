@@ -41,18 +41,12 @@ def standardize_text(text: str) -> str:
     return text
 
 
-def count_words(string):
-    if isinstance(string, str):
-        return len(string.split(" "))
-    else:
-        return 1
+def count_words(string: str) -> int:
+    return len(string.split(" "))
 
 
-def count_chars(string):
-    if isinstance(string, str):
-        return len(string)
-    else:
-        return 1
+def count_chars(string:str) -> int:
+    return len(string)
 
 
 def add_error_count(
