@@ -107,11 +107,11 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_score_by_column(
-    df: pd.DataFrame, gb_col: str, stat_col: str, count_col: str
+    df: pd.DataFrame, groupby_col: str, stat_col: str, count_col: str
 ) -> pd.DataFrame:
-    """group by gb_col in df and calculate wer given a stat_col with segmentwise number of errors"""
+    """group by groupby_col in df and calculate wer given a stat_col with segmentwise number of errors"""
     return round(
-        df.groupby(gb_col)[stat_col].sum() / df.groupby(gb_col)[count_col].sum() * 100,
+        df.groupby(groupby_col)[stat_col].sum() / df.groupby(groupby_col)[count_col].sum() * 100,
         2,
     )
 
