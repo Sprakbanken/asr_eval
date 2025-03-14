@@ -78,17 +78,21 @@ def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
         if pred_lang == "":
             continue
 
+        gold_column = get_reference_column(pred_lang)
+        pred_column = "standardized_prediction"
+        if pred_column not in df_.columns:
+            continue
+
         data_dict["modell"].append(model)
         data_dict["språk"].append(lang)
 
-        gold_column = get_reference_column(pred_lang)
-        hyp_for_cer = df_.loc[:, "standardized_prediction"].str.cat(sep="")
+        hyp_for_cer = df_.loc[:, pred_column].str.cat(sep="")
         ref_for_cer = df_.loc[:, gold_column].str.cat(sep="")
         data_dict["CER"].append(
             jiwer.cer(reference=ref_for_cer, hypothesis=hyp_for_cer)
         )
 
-        hyp_for_wer = df_.loc[:, "standardized_prediction"].str.cat(sep=" ")
+        hyp_for_wer = df_.loc[:, pred_column].str.cat(sep=" ")
         ref_for_wer = df_.loc[:, gold_column].str.cat(sep=" ")
         data_dict["WER"].append(
             jiwer.wer(reference=ref_for_wer, hypothesis=hyp_for_wer)
