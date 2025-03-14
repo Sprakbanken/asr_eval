@@ -1,5 +1,13 @@
 import re
 import pandas as pd
+import jiwer
+
+
+SEMANTIC_GOLD_BM_COL = "raw_text"
+SEMANTIC_GOLD_NN_COL = "raw_text_nn"
+
+VERBATIM_GOLD_BM_COL = "standardized_text"
+VERBATIM_GOLD_NN_COL = "standardized_text_nn"
 
 
 def remove_punctuation(text: str) -> str:
@@ -41,39 +49,14 @@ def standardize_text(text: str) -> str:
     return text
 
 
-def count_words(string: str) -> int:
-    return len(string.split(" "))
-
-
-def count_chars(string:str) -> int:
-    return len(string)
-
-
-def add_error_count(
-    df: pd.DataFrame, text_col: str, condition: pd.Series | None = None
-) -> pd.DataFrame:
-    """Count words, characters and errors to calculate mean scores across multiple segments"""
-    if condition is None:
-        condition = df.index
-    df.loc[condition, "word_count"] = df.loc[condition, text_col].apply(count_words)
-    df.loc[condition, "char_count"] = df.loc[condition, text_col].apply(count_chars)
-    df.loc[condition, "word_errors"] = (
-        df.loc[condition, "wer"] * df.loc[condition, "word_count"]
-    )
-    df.loc[condition, "char_errors"] = (
-        df.loc[condition, "cer"] * df.loc[condition, "char_count"]
-    )
-    return df
-
-
-def calculate_mean_error_rate(
-    df: pd.DataFrame, stat_col: str, count_col: str
-) -> pd.DataFrame:
-    """Calculate total error rate for a dataframe given a stat_col with segmentwise number of errors"""
-    return round(
-        df[stat_col].sum() / df[count_col].sum() * 100,
-        2,
-    )
+def get_reference_column(pred_lang: str) -> str:
+    match pred_lang:
+        case "nno":
+            return VERBATIM_GOLD_NN_COL
+        case "nob":
+            return VERBATIM_GOLD_BM_COL
+        case _:
+            raise ValueError("Language code must be either 'nno' or 'nob'")
 
 
 def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
@@ -94,14 +77,23 @@ def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
     ):
         if pred_lang == "":
             continue
+
         data_dict["modell"].append(model)
         data_dict["språk"].append(lang)
+
+        gold_column = get_reference_column(pred_lang)
+        hyp_for_cer = df_.loc[:, "standardized_prediction"].str.cat(sep="")
+        ref_for_cer = df_.loc[:, gold_column].str.cat(sep="")
         data_dict["CER"].append(
-            calculate_mean_error_rate(df_, "char_errors", "char_count")
+            jiwer.cer(reference=ref_for_cer, hypothesis=hyp_for_cer)
         )
+
+        hyp_for_wer = df_.loc[:, "standardized_prediction"].str.cat(sep=" ")
+        ref_for_wer = df_.loc[:, gold_column].str.cat(sep=" ")
         data_dict["WER"].append(
-            calculate_mean_error_rate(df_, "word_errors", "word_count")
+            jiwer.wer(reference=ref_for_wer, hypothesis=hyp_for_wer)
         )
+
         data_dict["aligned semantic distance"].append(df_.aligned_semdist.mean())
         data_dict["semantic distance"].append(df_.semdist.mean())
         data_dict["semantic distance (sBERT)"].append(df_.sbert_semdist.mean())
