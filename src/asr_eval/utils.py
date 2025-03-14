@@ -52,7 +52,7 @@ def count_chars(string:str) -> int:
 def add_error_count(
     df: pd.DataFrame, text_col: str, condition: pd.Series | None = None
 ) -> pd.DataFrame:
-    """Count words and characters and errors to calculate mean scores that are not affected by segment length"""
+    """Count words, characters and errors to calculate mean scores across multiple segments"""
     if condition is None:
         condition = df.index
     df.loc[condition, "word_count"] = df.loc[condition, text_col].apply(count_words)
