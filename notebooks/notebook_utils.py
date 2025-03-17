@@ -2,19 +2,7 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-
-# Rename various labels for the visualisation
-VISUALIZE_LABEL_MAP = {
-    "cer": "CER",
-    "wer": "WER",
-    "sbert_semdist": "Semantic Distance (sBERT)",
-    "semdist": "Semantic Distance",
-    "aligned_semdist": "Aligned Semantic Distance",
-    "dialect": "Dialekt",
-    "year": "Årstall",
-    "gender": "Kjønn",
-}
+from typing import Literal
 
 
 def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
@@ -119,31 +107,35 @@ def get_score_by_column(
     )
 
 
+# Rename various labels for the visualisation
+VISUALIZE_LABEL_MAP = {
+    "dialect": "Dialekt",
+    "year": "Årstall",
+    "gender": "Kjønn",
+    "nob": "Bokmål",
+    "nno": "Nynorsk",
+}
+
+
 def make_heatmap(
     df: pd.DataFrame,
-    grouping: str,
-    metric: str,
+    feature: Literal["dialect", "gender"],
+    metric: Literal[
+        "CER",
+        "WER",
+        "semantic distance (sBERT)",
+        "semantic distance",
+        "aligned semantic distance",
+    ],
+    language: Literal["nob", "nno"],
     cmap="Blues",
     figsize=(8, 4),
     annot=True,
     fmt=".2f",
 ):
-    if metric == "wer":
-        grouped_df = get_score_by_column(
-            df, [grouping, "model_name"], "word_errors", "word_count"
-        ).reset_index()
-    elif metric == "cer":
-        grouped_df = get_score_by_column(
-            df, [grouping, "model_name"], "char_errors", "char_count"
-        ).reset_index()
-    elif "semdist" in metric:
-        grouped_df = df.groupby([grouping, "model_name"])[metric].mean().reset_index()
-    else:
-        raise ValueError("Invalid metric")
+    """Make a heatmap of the given feature and metric"""
 
-    feature_col = VISUALIZE_LABEL_MAP[grouping]
-    metric_col = VISUALIZE_LABEL_MAP[metric]
-    grouped_df.columns = [feature_col, "Modell", metric_col]
-    pivot = grouped_df.pivot(index=feature_col, columns="Modell", values=metric_col)
+    viz_df = df[df.språk == language]
+    pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
     plt.figure(figsize=figsize)
     sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
