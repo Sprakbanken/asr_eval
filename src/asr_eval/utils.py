@@ -1,4 +1,13 @@
 import re
+import pandas as pd
+import jiwer
+
+
+SEMANTIC_GOLD_BM_COL = "raw_text"
+SEMANTIC_GOLD_NN_COL = "raw_text_nn"
+
+VERBATIM_GOLD_BM_COL = "standardized_text"
+VERBATIM_GOLD_NN_COL = "standardized_text_nn"
 
 
 def remove_punctuation(text: str) -> str:
@@ -38,3 +47,62 @@ def standardize_text(text: str) -> str:
     text = remove_punctuation(text)
     text = remove_multiple_spaces(text)
     return text
+
+
+def get_reference_column(pred_lang: str) -> str:
+    match pred_lang:
+        case "nno":
+            return VERBATIM_GOLD_NN_COL
+        case "nob":
+            return VERBATIM_GOLD_BM_COL
+        case _:
+            raise ValueError("Language code must be either 'nno' or 'nob'")
+
+
+def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
+    """Calculate mean scores for each model and language, and group by a chosen feature_col"""
+    data_dict = {
+        "modell": [],
+        "språk": [],
+        "CER": [],
+        "WER": [],
+        "aligned semantic distance": [],
+        "semantic distance": [],
+        "semantic distance (sBERT)": [],
+        feature_col: [],
+    }
+
+    for (model, lang, pred_lang, feature), df_ in df.groupby(
+        ["model_name", "language_code", "prediction_langcode", feature_col]
+    ):
+        if pred_lang == "":
+            continue
+
+        gold_column = get_reference_column(pred_lang)
+        pred_column = "standardized_prediction"
+        if pred_column not in df_.columns:
+            continue
+
+        data_dict["modell"].append(model)
+        data_dict["språk"].append(lang)
+
+        hyp_for_cer = df_.loc[:, pred_column].str.cat(sep="")
+        ref_for_cer = df_.loc[:, gold_column].str.cat(sep="")
+        data_dict["CER"].append(
+            jiwer.cer(reference=ref_for_cer, hypothesis=hyp_for_cer)
+        )
+
+        hyp_for_wer = df_.loc[:, pred_column].str.cat(sep=" ")
+        ref_for_wer = df_.loc[:, gold_column].str.cat(sep=" ")
+        data_dict["WER"].append(
+            jiwer.wer(reference=ref_for_wer, hypothesis=hyp_for_wer)
+        )
+
+        data_dict["aligned semantic distance"].append(df_.aligned_semdist.mean())
+        data_dict["semantic distance"].append(df_.semdist.mean())
+        data_dict["semantic distance (sBERT)"].append(df_.sbert_semdist.mean())
+        data_dict[feature_col].append(feature)
+
+    mean_score_df = pd.DataFrame(data_dict).drop_duplicates()
+    mean_score_df[feature_col] = mean_score_df[feature_col].astype("str")
+    return mean_score_df
