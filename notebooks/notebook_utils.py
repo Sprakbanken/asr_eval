@@ -107,16 +107,6 @@ def get_score_by_column(
     )
 
 
-# Rename various labels for the visualisation
-VISUALIZE_LABEL_MAP = {
-    "dialect": "Dialekt",
-    "year": "Årstall",
-    "gender": "Kjønn",
-    "nob": "Bokmål",
-    "nno": "Nynorsk",
-}
-
-
 def make_heatmap(
     df: pd.DataFrame,
     feature: Literal["dialect", "gender"],
@@ -139,3 +129,7 @@ def make_heatmap(
     pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
     plt.figure(figsize=figsize)
     sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
+    plt.xlabel(None)  # Remove axis labels because they are provided in the plot title
+    plt.ylabel(None)
+    # Adjust figure layout so that the labels aren't cut off when saving the image
+    plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
