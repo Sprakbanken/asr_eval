@@ -57,6 +57,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     model_name = model_name.replace("-long", "")
     model_name = model_name.replace("NbAiLab_", "")
     model_name = model_name.replace("openai_", "openai-")
+    model_name = model_name.replace("-v3", "")
 
     return date, model_name, language_code, prediction_langcode
 
@@ -111,7 +112,9 @@ def get_score_by_column(
 ) -> pd.DataFrame:
     """group by groupby_col in df and calculate wer given a stat_col with segmentwise number of errors"""
     return round(
-        df.groupby(groupby_col)[stat_col].sum() / df.groupby(groupby_col)[count_col].sum() * 100,
+        df.groupby(groupby_col)[stat_col].sum()
+        / df.groupby(groupby_col)[count_col].sum()
+        * 100,
         2,
     )
 
