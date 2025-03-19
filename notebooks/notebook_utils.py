@@ -174,7 +174,13 @@ def make_plot(
         case "barchart":
             viz_df[metric] = viz_df[metric] * 100
 
-            sns.barplot(x="modell", y=metric, hue=feature, data=viz_df, palette="ocean")
+            sns.barplot(
+                x="modell",
+                y=metric,
+                hue=feature,
+                data=viz_df.sort_values([feature, metric]),
+                palette="ocean",
+            )
 
             plt.xlabel(None)
             plt.ylabel(metric + " (%)", fontsize=12)
@@ -184,7 +190,10 @@ def make_plot(
             plt.yticks(fontsize=10)
 
         case "heatmap":
-            pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
+            sort_col = viz_df[feature].unique()[0]
+            pivot = viz_df.pivot(
+                index="modell", columns=feature, values=metric
+            ).sort_values(sort_col)
             sns.heatmap(pivot, cmap="Blues", annot=True, fmt=".2f", **kwargs)
             plt.xlabel(
                 None
