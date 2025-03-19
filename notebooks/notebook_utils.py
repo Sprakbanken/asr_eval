@@ -122,14 +122,98 @@ def make_heatmap(
     figsize=(8, 4),
     annot=True,
     fmt=".2f",
+    save_to_dir: Path | None = None,
 ):
     """Make a heatmap of the given feature and metric"""
-
+    label_map = {
+        "nob": "bokmål",
+        "nno": "nynorsk",
+        "gender": "kjønn",
+        "dialect": "dialekt",
+    }
     viz_df = df[df.språk == language]
     pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
     plt.figure(figsize=figsize)
+    plt.title(
+        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
+    )
+
     sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
     plt.xlabel(None)  # Remove axis labels because they are provided in the plot title
     plt.ylabel(None)
+
     # Adjust figure layout so that the labels aren't cut off when saving the image
     plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
+    if save_to_dir:
+        plt.savefig(
+            save_to_dir / f"{feature}_{'-'.join(metric.split())}_{language}.png",
+            dpi=300,
+            transparent=True,
+        )
+
+
+def make_plot(
+    df: pd.DataFrame,
+    plot_type: Literal["barchart", "heatmap"],
+    feature: Literal["dialect", "gender"],
+    metric: Literal[
+        "CER",
+        "WER",
+        "semantic distance (sBERT)",
+        "semantic distance",
+        "aligned semantic distance",
+    ],
+    language: Literal["nob", "nno"],
+    figsize=(12, 10),
+    save_to_dir: Path | None = None,
+    **kwargs,
+):
+    """Make a plot of the given feature"""
+    label_map = {
+        "nob": "bokmål",
+        "nno": "nynorsk",
+        "gender": "kjønn",
+        "dialect": "dialekt",
+    }
+    viz_df = df[df.språk == language]
+    plt.figure(figsize=figsize)
+    plt.title(
+        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
+    )
+
+    match plot_type:
+        case "barchart":
+            viz_df[metric] = viz_df[metric] * 100
+
+            sns.barplot(
+                x="modell", y=metric, hue="gender", data=viz_df, palette="ocean"
+            )
+
+            plt.xlabel(None)
+            plt.ylabel(metric + " (%)", fontsize=12)
+            plt.legend(title=label_map[feature])
+            # Rotate x-tick labels and adjust font size
+            plt.xticks(rotation=45, ha="right", fontsize=10)
+            plt.yticks(fontsize=10)
+
+        case "heatmap":
+            pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
+            sns.heatmap(pivot, cmap="Blues", annot=True, fmt=".2f", **kwargs)
+            plt.xlabel(
+                None
+            )  # Remove axis labels because they are provided in the plot title
+            plt.ylabel(None)
+        case _:
+            print("Invalid plot type. Choose 'bar' or 'heatmap'.")
+
+    plt.tight_layout()
+
+    # Adjust figure layout so that the labels aren't cut off when saving the image
+    plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
+    if save_to_dir:
+        plt.savefig(
+            save_to_dir
+            / f"{plot_type}_{feature}_{'-'.join(metric.split())}_{language}.png",
+            dpi=300,
+            transparent=True,
+        )
