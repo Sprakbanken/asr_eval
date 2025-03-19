@@ -162,6 +162,7 @@ def make_plot(
         "nno": "nynorsk",
         "gender": "kjønn",
         "dialect": "dialekt",
+        "overlapping": "overlappende tale",
     }
     viz_df = df[df.språk == language]
     plt.figure(figsize=figsize)
@@ -173,9 +174,7 @@ def make_plot(
         case "barchart":
             viz_df[metric] = viz_df[metric] * 100
 
-            sns.barplot(
-                x="modell", y=metric, hue="gender", data=viz_df, palette="ocean"
-            )
+            sns.barplot(x="modell", y=metric, hue=feature, data=viz_df, palette="ocean")
 
             plt.xlabel(None)
             plt.ylabel(metric + " (%)", fontsize=12)
