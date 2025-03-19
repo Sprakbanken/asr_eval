@@ -1,5 +1,8 @@
 import pandas as pd
 from pathlib import Path
+import matplotlib.pyplot as plt
+import seaborn as sns
+from typing import Literal
 
 
 def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
@@ -42,6 +45,7 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     model_name = model_name.replace("-long", "")
     model_name = model_name.replace("NbAiLab_", "")
     model_name = model_name.replace("openai_", "openai-")
+    model_name = model_name.replace("-v3", "")
 
     return date, model_name, language_code, prediction_langcode
 
@@ -69,3 +73,63 @@ def load_files_to_df(filedir: Path) -> pd.DataFrame:
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
     return df
+
+
+def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
+    """Expand abbreviations for values in the dialect and gender columns"""
+
+    dialect_areas = {
+        "w": "vest",
+        "n": "nord",
+        "t": "trøndersk",
+        "sw": "sørvest",
+        "e": "øst",
+    }
+    gender_replace = {
+        "m": "mann",
+        "f": "kvinne",
+    }
+
+    df["dialect"] = df["dialect"].replace(dialect_areas)
+    df["gender"] = df["gender"].replace(gender_replace)
+    return df
+
+
+def get_score_by_column(
+    df: pd.DataFrame, groupby_col: str, stat_col: str, count_col: str
+) -> pd.DataFrame:
+    """group by groupby_col in df and calculate wer given a stat_col with segmentwise number of errors"""
+    return round(
+        df.groupby(groupby_col)[stat_col].sum()
+        / df.groupby(groupby_col)[count_col].sum()
+        * 100,
+        2,
+    )
+
+
+def make_heatmap(
+    df: pd.DataFrame,
+    feature: Literal["dialect", "gender"],
+    metric: Literal[
+        "CER",
+        "WER",
+        "semantic distance (sBERT)",
+        "semantic distance",
+        "aligned semantic distance",
+    ],
+    language: Literal["nob", "nno"],
+    cmap="Blues",
+    figsize=(8, 4),
+    annot=True,
+    fmt=".2f",
+):
+    """Make a heatmap of the given feature and metric"""
+
+    viz_df = df[df.språk == language]
+    pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
+    plt.figure(figsize=figsize)
+    sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
+    plt.xlabel(None)  # Remove axis labels because they are provided in the plot title
+    plt.ylabel(None)
+    # Adjust figure layout so that the labels aren't cut off when saving the image
+    plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
