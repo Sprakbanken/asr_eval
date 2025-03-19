@@ -95,18 +95,6 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_score_by_column(
-    df: pd.DataFrame, groupby_col: str, stat_col: str, count_col: str
-) -> pd.DataFrame:
-    """group by groupby_col in df and calculate wer given a stat_col with segmentwise number of errors"""
-    return round(
-        df.groupby(groupby_col)[stat_col].sum()
-        / df.groupby(groupby_col)[count_col].sum()
-        * 100,
-        2,
-    )
-
-
 def make_heatmap(
     df: pd.DataFrame,
     feature: Literal["dialect", "gender"],
@@ -155,7 +143,7 @@ def make_heatmap(
 def make_plot(
     df: pd.DataFrame,
     plot_type: Literal["barchart", "heatmap"],
-    feature: Literal["dialect", "gender"],
+    feature: Literal["dialect", "gender", "overlapping"],
     metric: Literal[
         "CER",
         "WER",
