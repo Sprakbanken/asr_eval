@@ -1,5 +1,5 @@
 from asr_eval.metrics import cer, wer, sbert_semdist, semdist, aligned_semdist
-from asr_eval.utils import standardize_text
+from asr_eval.utils import standardize_text, get_reference_column
 from argparse import ArgumentParser
 from pathlib import Path
 import pandas as pd
@@ -9,11 +9,6 @@ import logging
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
-SEMANTIC_GOLD_BM_COL = "raw_text"
-SEMANTIC_GOLD_NN_COL = "raw_text_nn"
-
-VERBATIM_GOLD_BM_COL = "standardized_text"
-VERBATIM_GOLD_NN_COL = "standardized_text_nn"
 
 PRED_COL = "predictions"
 EMPTY_SEGMENT_ID = 4498  # one segment is empty/doesn't have any text
@@ -64,13 +59,7 @@ def eval():
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    match args.language_code:
-        case "nno":
-            gold_column = VERBATIM_GOLD_NN_COL
-        case "nob":
-            gold_column = VERBATIM_GOLD_BM_COL
-        case _:
-            raise ValueError("Language code must be either 'nno' or 'nob'")
+    gold_column = get_reference_column(args.language_code)
 
     if args.output_file is None:
         args.output_file = args.input_file.parent / (
