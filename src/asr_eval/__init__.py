@@ -58,7 +58,6 @@ def eval():
 
     logging.basicConfig(
         filename=f"logs/asr_eval_{args.input_file.stem}.log",
-        filemode="a+",
         level=loglevel,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
