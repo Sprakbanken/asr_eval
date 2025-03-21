@@ -53,8 +53,12 @@ def eval():
     else:
         loglevel = logging.INFO
 
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+
     logging.basicConfig(
         filename=f"logs/asr_eval_{args.input_file.stem}.log",
+        filemode="a+",
         level=loglevel,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
