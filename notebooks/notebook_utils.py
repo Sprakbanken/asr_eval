@@ -95,6 +95,32 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def get_formatted_score_df(filedir: Path) -> pd.DataFrame:
+    df = load_files_to_df(filedir)
+
+    df = expand_abbreviations(df)
+
+    columns_to_keep = [
+        "cer",
+        "wer",
+        "sbert_semdist",
+        "semdist",
+        "aligned_semdist",
+        "date",
+        "model_name",
+        "language_code",
+        "prediction_langcode",
+        "year",
+        "dialect",
+        "gender",
+        "standardized_text",
+        "standardized_text_nn",
+        "standardized_prediction",
+    ]
+
+    return df[columns_to_keep]
+
+
 def make_heatmap(
     df: pd.DataFrame,
     feature: Literal["dialect", "gender"],
