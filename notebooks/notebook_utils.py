@@ -95,18 +95,6 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_score_by_column(
-    df: pd.DataFrame, groupby_col: str, stat_col: str, count_col: str
-) -> pd.DataFrame:
-    """group by groupby_col in df and calculate wer given a stat_col with segmentwise number of errors"""
-    return round(
-        df.groupby(groupby_col)[stat_col].sum()
-        / df.groupby(groupby_col)[count_col].sum()
-        * 100,
-        2,
-    )
-
-
 def make_heatmap(
     df: pd.DataFrame,
     feature: Literal["dialect", "gender"],
@@ -155,7 +143,7 @@ def make_heatmap(
 def make_plot(
     df: pd.DataFrame,
     plot_type: Literal["barchart", "heatmap"],
-    feature: Literal["dialect", "gender"],
+    feature: Literal["dialect", "gender", "overlapping"],
     metric: Literal[
         "CER",
         "WER",
@@ -174,6 +162,7 @@ def make_plot(
         "nno": "nynorsk",
         "gender": "kjønn",
         "dialect": "dialekt",
+        "overlapping": "overlappende tale",
     }
     viz_df = df[df.språk == language]
     plt.figure(figsize=figsize)
@@ -186,7 +175,11 @@ def make_plot(
             viz_df[metric] = viz_df[metric] * 100
 
             sns.barplot(
-                x="modell", y=metric, hue="gender", data=viz_df, palette="ocean"
+                x="modell",
+                y=metric,
+                hue=feature,
+                data=viz_df.sort_values([feature, metric]),
+                palette="ocean",
             )
 
             plt.xlabel(None)
@@ -197,7 +190,10 @@ def make_plot(
             plt.yticks(fontsize=10)
 
         case "heatmap":
-            pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
+            sort_col = viz_df[feature].unique()[0]
+            pivot = viz_df.pivot(
+                index="modell", columns=feature, values=metric
+            ).sort_values(sort_col)
             sns.heatmap(pivot, cmap="Blues", annot=True, fmt=".2f", **kwargs)
             plt.xlabel(
                 None
