@@ -169,7 +169,7 @@ def make_heatmap(
 def make_plot(
     df: pd.DataFrame,
     plot_type: Literal["barchart", "heatmap"],
-    feature: Literal["dialect", "gender", "overlapping"],
+    feature: Literal["dialect", "gender", "overlapping", "year"],
     metric: Literal[
         "CER",
         "WER",
@@ -189,8 +189,9 @@ def make_plot(
         "gender": "kjønn",
         "dialect": "dialekt",
         "overlapping": "overlappende tale",
+        "year": "år",
     }
-    viz_df = df[df.språk == language]
+    viz_df = df[df.språk == language].copy()
     plt.figure(figsize=figsize)
     plt.title(
         f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
