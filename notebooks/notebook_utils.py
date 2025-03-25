@@ -121,51 +121,6 @@ def get_formatted_score_df(filedir: Path) -> pd.DataFrame:
     return df[columns_to_keep]
 
 
-def make_heatmap(
-    df: pd.DataFrame,
-    feature: Literal["dialect", "gender"],
-    metric: Literal[
-        "CER",
-        "WER",
-        "semantic distance (sBERT)",
-        "semantic distance",
-        "aligned semantic distance",
-    ],
-    language: Literal["nob", "nno"],
-    cmap="Blues",
-    figsize=(8, 4),
-    annot=True,
-    fmt=".2f",
-    save_to_dir: Path | None = None,
-):
-    """Make a heatmap of the given feature and metric"""
-    label_map = {
-        "nob": "bokmål",
-        "nno": "nynorsk",
-        "gender": "kjønn",
-        "dialect": "dialekt",
-    }
-    viz_df = df[df.språk == language]
-    pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
-    plt.figure(figsize=figsize)
-    plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
-    )
-
-    sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
-    plt.xlabel(None)  # Remove axis labels because they are provided in the plot title
-    plt.ylabel(None)
-
-    # Adjust figure layout so that the labels aren't cut off when saving the image
-    plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
-    if save_to_dir:
-        plt.savefig(
-            save_to_dir / f"{feature}_{'-'.join(metric.split())}_{language}.png",
-            dpi=300,
-            transparent=True,
-        )
-
-
 def make_plot(
     df: pd.DataFrame,
     plot_type: Literal["barchart", "heatmap"],
