@@ -95,55 +95,36 @@ def expand_abbreviations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def make_heatmap(
-    df: pd.DataFrame,
-    feature: Literal["dialect", "gender"],
-    metric: Literal[
-        "CER",
-        "WER",
-        "semantic distance (sBERT)",
-        "semantic distance",
-        "aligned semantic distance",
-    ],
-    language: Literal["nob", "nno"],
-    cmap="Blues",
-    figsize=(8, 4),
-    annot=True,
-    fmt=".2f",
-    save_to_dir: Path | None = None,
-):
-    """Make a heatmap of the given feature and metric"""
-    label_map = {
-        "nob": "bokmål",
-        "nno": "nynorsk",
-        "gender": "kjønn",
-        "dialect": "dialekt",
-    }
-    viz_df = df[df.språk == language]
-    pivot = viz_df.pivot(index="modell", columns=feature, values=metric)
-    plt.figure(figsize=figsize)
-    plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
-    )
+def get_formatted_score_df(filedir: Path) -> pd.DataFrame:
+    df = load_files_to_df(filedir)
 
-    sns.heatmap(pivot, annot=annot, fmt=fmt, cmap=cmap)
-    plt.xlabel(None)  # Remove axis labels because they are provided in the plot title
-    plt.ylabel(None)
+    df = expand_abbreviations(df)
 
-    # Adjust figure layout so that the labels aren't cut off when saving the image
-    plt.subplots_adjust(left=0.2, right=0.95, top=0.95, bottom=0.2)
-    if save_to_dir:
-        plt.savefig(
-            save_to_dir / f"{feature}_{'-'.join(metric.split())}_{language}.png",
-            dpi=300,
-            transparent=True,
-        )
+    columns_to_keep = [
+        "cer",
+        "wer",
+        "sbert_semdist",
+        "semdist",
+        "aligned_semdist",
+        "date",
+        "model_name",
+        "language_code",
+        "prediction_langcode",
+        "year",
+        "dialect",
+        "gender",
+        "standardized_text",
+        "standardized_text_nn",
+        "standardized_prediction",
+    ]
+
+    return df[columns_to_keep]
 
 
 def make_plot(
     df: pd.DataFrame,
     plot_type: Literal["barchart", "heatmap"],
-    feature: Literal["dialect", "gender", "overlapping"],
+    feature: Literal["dialect", "gender", "overlapping", "year"],
     metric: Literal[
         "CER",
         "WER",
@@ -163,8 +144,9 @@ def make_plot(
         "gender": "kjønn",
         "dialect": "dialekt",
         "overlapping": "overlappende tale",
+        "year": "år",
     }
-    viz_df = df[df.språk == language]
+    viz_df = df[df.språk == language].copy()
     plt.figure(figsize=figsize)
     plt.title(
         f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
