@@ -103,6 +103,6 @@ def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
         data_dict["semantic distance (sBERT)"].append(df_.sbert_semdist.mean())
         data_dict[feature_col].append(feature)
 
-    mean_score_df = pd.DataFrame(data_dict).drop_duplicates()
+    mean_score_df = pd.DataFrame(data_dict)
     mean_score_df[feature_col] = mean_score_df[feature_col].astype("str")
     return mean_score_df
