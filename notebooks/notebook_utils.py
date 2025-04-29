@@ -135,6 +135,7 @@ def make_plot(
     language: Literal["nob", "nno"],
     figsize=(12, 10),
     save_to_dir: Path | None = None,
+    title_text: str = "",
     **kwargs,
 ):
     """Make a plot of the given feature"""
@@ -149,7 +150,7 @@ def make_plot(
     viz_df = df[df.språk == language].copy()
     plt.figure(figsize=figsize)
     plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]})"
+        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]}){title_text}",
     )
 
     match plot_type:
@@ -191,7 +192,7 @@ def make_plot(
     if save_to_dir:
         plt.savefig(
             save_to_dir
-            / f"{plot_type}_{feature}_{'-'.join(metric.split())}_{language}.png",
+            / f"{plot_type}_{feature}_{'-'.join(metric.split())}_{language}{title_text}.png",
             dpi=300,
             transparent=True,
         )
