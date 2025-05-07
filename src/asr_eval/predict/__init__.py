@@ -138,7 +138,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", type=str, required=True)
     parser.add_argument("-o", "--output_file", type=Path, required=True)
-    parser.add_argument("-i", "--input_file", type=Path, required=True)
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        type=Path,
+        required=True,
+        help='Filepath to a csv file that contains filenames of audio segments (wav-files) in a column called "segmented_audio"',
+    )
+    # speaker,gender,dialect,language,start_ms,end_ms,duration_ms,raw_text,segmented_audio
     parser.add_argument("-A", "--audio_path", type=Path, required=True)
     parser.add_argument(
         "--convert_files", action="store_true", help="Convert files to WAV format"
