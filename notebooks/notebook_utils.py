@@ -132,7 +132,7 @@ def make_plot(
         "semantic distance",
         "aligned semantic distance",
     ],
-    language: Literal["nob", "nno"],
+    language: Literal["nob", "nno", "both"],
     figsize=(12, 10),
     save_to_dir: Path | None = None,
     title_text: str = "",
@@ -140,17 +140,19 @@ def make_plot(
 ):
     """Make a plot of the given feature"""
     label_map = {
-        "nob": "bokmål",
-        "nno": "nynorsk",
+        "nob": "(bokmål)",
+        "nno": "(nynorsk)",
+        "both": "(begge målformer)",
         "gender": "kjønn",
         "dialect": "dialekt",
         "overlapping": "overlappende tale",
         "year": "år",
     }
+
     viz_df = df[df.språk == language].copy()
     plt.figure(figsize=figsize)
     plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} ({label_map[language]}){title_text}",
+        f"{metric} fordelt på {label_map.get(feature, feature)} {label_map[language]}{title_text}",
     )
 
     match plot_type:
@@ -183,7 +185,7 @@ def make_plot(
             )  # Remove axis labels because they are provided in the plot title
             plt.ylabel(None)
         case _:
-            print("Invalid plot type. Choose 'bar' or 'heatmap'.")
+            print("Invalid plot type. Choose 'barchart' or 'heatmap'.")
 
     plt.tight_layout()
 
