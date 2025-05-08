@@ -136,12 +136,30 @@ def convert_file(filepath: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", type=str, required=True)
-    parser.add_argument("-o", "--output_file", type=Path, required=True)
-    parser.add_argument("-i", "--input_file", type=Path, required=True)
-    parser.add_argument("-A", "--audio_path", type=Path, required=True)
     parser.add_argument(
-        "--convert_files", action="store_true", help="Convert files to WAV format"
+        "-m",
+        "--model",
+        type=str,
+        required=True,
+        help='The name of an ASR model or ASR API. Can be one of "usm", "chirp", "gcloud", "azure" or any huggingface model, e.g. "NbAiLab/nb-whisper-large"',
+    )
+    parser.add_argument("-o", "--output_file", type=Path, required=True)
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        type=Path,
+        required=True,
+        help='Filepath to a csv file that contains filenames of audio segments (wav-files) in a column called "segmented_audio"',
+    )
+    parser.add_argument(
+        "-A",
+        "--audio_path",
+        type=Path,
+        required=True,
+        help="Path to directory with audio files (wav-files).",
+    )
+    parser.add_argument(
+        "--convert_files", action="store_true", help="Convert files to WAV format."
     )
     parser.add_argument(
         "generation_parameters",
