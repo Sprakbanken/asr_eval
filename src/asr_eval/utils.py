@@ -59,7 +59,9 @@ def get_reference_column(pred_lang: str) -> str:
             raise ValueError("Language code must be either 'nno' or 'nob'")
 
 
-def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
+def calculate_mean_scores(
+    df: pd.DataFrame, feature_col: str, add_both_lang_col: bool = False
+) -> pd.DataFrame:
     """Calculate mean scores for each model and language, and group by a chosen feature_col"""
     data_dict = {
         "modell": [],
@@ -105,4 +107,27 @@ def calculate_mean_scores(df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
 
     mean_score_df = pd.DataFrame(data_dict)
     mean_score_df[feature_col] = mean_score_df[feature_col].astype("str")
+
+    if add_both_lang_col:
+        score_columns = [
+            "CER",
+            "WER",
+            "aligned semantic distance",
+            "semantic distance",
+            "semantic distance (sBERT)",
+        ]
+        new_rows = []
+        for (model, feature), df_ in mean_score_df.groupby(["modell", feature_col]):
+            if df_.språk.nunique() > 1:
+                avg_scores = df_[score_columns].mean()
+                new_row = {
+                    "språk": "both",
+                    **avg_scores,
+                    "modell": model,
+                    feature_col: feature,
+                }
+                new_rows.append(new_row)
+
+        mean_score_df = pd.concat((mean_score_df, pd.DataFrame(new_rows)))
+
     return mean_score_df
