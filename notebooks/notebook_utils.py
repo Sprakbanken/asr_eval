@@ -45,7 +45,8 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     model_name = model_name.replace("-long", "")
     model_name = model_name.replace("NbAiLab_", "")
     model_name = model_name.replace("openai_", "openai-")
-    model_name = model_name.replace("-v3", "")
+    if "-v3" in model_name and "turbo" not in model_name:
+        model_name = model_name.replace("-v3", "")
 
     return date, model_name, language_code, prediction_langcode
 
@@ -182,7 +183,7 @@ def make_plot(
                     )
 
             plt.xlabel(None)
-            plt.ylabel(metric + " (%)", fontsize=12)
+            plt.ylabel(metric, fontsize=12)
             plt.legend(title=label_map[feature])
             # Rotate x-tick labels and adjust font size
             plt.xticks(rotation=45, ha="right", fontsize=10)
