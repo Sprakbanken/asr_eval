@@ -158,21 +158,27 @@ def make_plot(
     match plot_type:
         case "barchart":
             viz_df[metric] = viz_df[metric] * 100
-
+            score_display_range = list(range(10, 100, 10))
             sns.barplot(
                 x="modell",
                 y=metric,
                 hue=feature,
                 data=viz_df.sort_values([feature, metric]),
                 palette="ocean",
+                zorder=2,
             )
+
+            for y_value in score_display_range:  # Example y-values for the lines
+                plt.axhline(
+                    y=y_value, color="gray", linestyle="--", linewidth=0.8, zorder=1
+                )
 
             plt.xlabel(None)
             plt.ylabel(metric + " (%)", fontsize=12)
             plt.legend(title=label_map[feature])
             # Rotate x-tick labels and adjust font size
             plt.xticks(rotation=45, ha="right", fontsize=10)
-            plt.yticks(fontsize=10)
+            plt.yticks(score_display_range, fontsize=10)
 
         case "heatmap":
             sort_col = viz_df[feature].unique()[0]
