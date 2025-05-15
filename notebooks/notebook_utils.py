@@ -150,14 +150,21 @@ def make_plot(
     }
 
     viz_df = df[df.språk == language].copy()
+
+    metric_str = metric
+
+    # Prosentscore, ikke desimalscore for cer og wer
+    if metric in ["CER", "WER"]:
+        viz_df[metric] = viz_df[metric] * 100
+        metric_str = f"{metric_str} (%)"
+
     plt.figure(figsize=figsize)
     plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} {label_map[language]}{title_text}",
+        f"{metric_str} fordelt på {label_map.get(feature, feature)} {label_map[language]}{title_text}",
     )
 
     match plot_type:
         case "barchart":
-            viz_df[metric] = viz_df[metric] * 100
             score_display_range = list(range(10, 100, 10))
             sns.barplot(
                 x="modell",
