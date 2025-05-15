@@ -45,7 +45,8 @@ def filestem_to_data(filestem: str) -> tuple[str, str, str, str]:
     model_name = model_name.replace("-long", "")
     model_name = model_name.replace("NbAiLab_", "")
     model_name = model_name.replace("openai_", "openai-")
-    model_name = model_name.replace("-v3", "")
+    if "-v3" in model_name and "turbo" not in model_name:
+        model_name = model_name.replace("-v3", "")
 
     return date, model_name, language_code, prediction_langcode
 
@@ -136,6 +137,7 @@ def make_plot(
     figsize=(12, 10),
     save_to_dir: Path | None = None,
     title_text: str = "",
+    score_display_range: list[int] | None = None,
     **kwargs,
 ):
     """Make a plot of the given feature"""
@@ -150,29 +152,42 @@ def make_plot(
     }
 
     viz_df = df[df.språk == language].copy()
+
+    metric_str = metric
+
+    # Prosentscore, ikke desimalscore for cer og wer
+    if metric in ["CER", "WER"]:
+        viz_df[metric] = viz_df[metric] * 100
+        metric_str = f"{metric_str} (%)"
+
     plt.figure(figsize=figsize)
     plt.title(
-        f"{metric} fordelt på {label_map.get(feature, feature)} {label_map[language]}{title_text}",
+        f"{metric_str} fordelt på {label_map.get(feature, feature)} {label_map[language]}{title_text}",
     )
 
     match plot_type:
         case "barchart":
-            viz_df[metric] = viz_df[metric] * 100
-
             sns.barplot(
                 x="modell",
                 y=metric,
                 hue=feature,
                 data=viz_df.sort_values([feature, metric]),
                 palette="ocean",
+                zorder=2,
             )
+            if score_display_range:
+                # add horizontal lines
+                for y_value in score_display_range:
+                    plt.axhline(
+                        y=y_value, color="gray", linestyle="--", linewidth=0.8, zorder=1
+                    )
 
             plt.xlabel(None)
-            plt.ylabel(metric + " (%)", fontsize=12)
+            plt.ylabel(metric, fontsize=12)
             plt.legend(title=label_map[feature])
             # Rotate x-tick labels and adjust font size
             plt.xticks(rotation=45, ha="right", fontsize=10)
-            plt.yticks(fontsize=10)
+            plt.yticks(score_display_range, fontsize=10)
 
         case "heatmap":
             sort_col = viz_df[feature].unique()[0]
