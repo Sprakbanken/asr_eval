@@ -136,6 +136,7 @@ def make_plot(
     figsize=(12, 10),
     save_to_dir: Path | None = None,
     title_text: str = "",
+    score_display_range: list[int] | None = None,
     **kwargs,
 ):
     """Make a plot of the given feature"""
@@ -165,7 +166,6 @@ def make_plot(
 
     match plot_type:
         case "barchart":
-            score_display_range = list(range(10, 80, 10))
             sns.barplot(
                 x="modell",
                 y=metric,
@@ -174,11 +174,12 @@ def make_plot(
                 palette="ocean",
                 zorder=2,
             )
-
-            for y_value in score_display_range:  # Example y-values for the lines
-                plt.axhline(
-                    y=y_value, color="gray", linestyle="--", linewidth=0.8, zorder=1
-                )
+            if score_display_range:
+                # add horizontal lines
+                for y_value in score_display_range:
+                    plt.axhline(
+                        y=y_value, color="gray", linestyle="--", linewidth=0.8, zorder=1
+                    )
 
             plt.xlabel(None)
             plt.ylabel(metric + " (%)", fontsize=12)
