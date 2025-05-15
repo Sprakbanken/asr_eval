@@ -165,7 +165,7 @@ def make_plot(
 
     match plot_type:
         case "barchart":
-            score_display_range = list(range(10, 100, 10))
+            score_display_range = list(range(10, 80, 10))
             sns.barplot(
                 x="modell",
                 y=metric,
